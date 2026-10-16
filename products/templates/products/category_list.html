@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت دسته‌بندی‌ها | {{ store.name }}</title>
+
+    <style>
+        :root {
+            --primary: {% if store.design %}{{ store.design.primary_color }}{% else %}#526B55{% endif %};
+            --secondary: {% if store.design %}{{ store.design.secondary_color }}{% else %}#F7F7F2{% endif %};
+            --text: #252823;
+            --muted: #777D75;
+            --border: #E8E9E3;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--secondary);
+            color: var(--text);
+            font-family: Tahoma, Arial, sans-serif;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .container {
+            width: min(1050px, 92%);
+            margin: 0 auto;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-inner {
+            min-height: 76px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 16px 0;
+        }
+
+        .brand {
+            color: var(--primary);
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 13px;
+        }
+
+        .nav a {
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+        }
+
+        main { padding: 42px 0 70px; }
+
+        .page-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: clamp(24px, 4vw, 34px);
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 2;
+        }
+
+        .heading-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 13px 19px;
+            border: 0;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .button-ai { background: #344F70; }
+
+        .panel {
+            padding: 24px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .panel-heading h2 {
+            margin: 0;
+            font-size: 19px;
+        }
+
+        .count {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .category-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .category-card {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: #fff;
+        }
+
+        .category-card h3 {
+            margin: 0 0 12px;
+            color: var(--primary);
+            font-size: 17px;
+        }
+
+        .category-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 2;
+            overflow-wrap: anywhere;
+        }
+
+        .empty {
+            padding: 35px 15px;
+            text-align: center;
+            border: 1px dashed var(--border);
+            border-radius: 14px;
+            color: var(--muted);
+            line-height: 2.2;
+        }
+
+        .messages { margin-bottom: 22px; }
+
+        .message {
+            padding: 14px 17px;
+            margin-bottom: 10px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-right: 5px solid #777D75;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.9;
+        }
+
+        .message-success {
+            background: #edf8ef;
+            border-color: #c7e7ce;
+            border-right-color: #268344;
+            color: #205c31;
+        }
+
+        .message-error {
+            background: #fff0ef;
+            border-color: #f2cfcc;
+            border-right-color: #c0392b;
+            color: #8c251d;
+        }
+
+        .message-warning {
+            background: #fff8e6;
+            border-color: #f0dfad;
+            border-right-color: #c28a12;
+            color: #79550a;
+        }
+
+        .message-info {
+            background: #edf5ff;
+            border-color: #cbdff8;
+            border-right-color: #3478bd;
+            color: #24578a;
+        }
+
+        @media (max-width: 650px) {
+            .category-list { grid-template-columns: 1fr; }
+            .panel { padding: 16px; }
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div class="container header-inner">
+        <a class="brand" href="/?store_id={{ store.id }}">
+            {{ store.name }}
+        </a>
+
+        <nav class="nav">
+            <a href="/?store_id={{ store.id }}">صفحه فروشگاه</a>
+            <a href="{% url 'products:product_list' %}?store_id={{ store.id }}">
+                مدیریت محصولات
+            </a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    {% if messages %}
+        <div class="messages" role="status" aria-live="polite">
+            {% for message in messages %}
+                <div class="message message-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <section class="page-heading">
+        <div>
+            <h1>مدیریت دسته‌بندی‌ها</h1>
+            <p class="subtitle">
+                دسته‌بندی‌های محصولات فروشگاه {{ store.name }} را مدیریت کن.
+            </p>
+        </div>
+
+        <div class="heading-actions">
+            <a class="button button-ai"
+               href="{% url 'products:category_ai_suggestions' %}?store_id={{ store.id }}">
+                ✨ پیشنهاد با هوش مصنوعی
+            </a>
+
+            <a class="button"
+               href="{% url 'products:category_create' %}?store_id={{ store.id }}">
+                + افزودن دسته‌بندی
+            </a>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-heading">
+            <h2>دسته‌بندی‌های فروشگاه</h2>
+            <span class="count">{{ categories|length }} دسته‌بندی</span>
+        </div>
+
+        {% if categories %}
+            <div class="category-list">
+                {% for category in categories %}
+                    <article class="category-card">
+                        <h3>{{ category.name }}</h3>
+                        <p>
+                            {% if category.description %}
+                                {{ category.description }}
+                            {% else %}
+                                توضیحی برای این دسته‌بندی ثبت نشده است.
+                            {% endif %}
+                        </p>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty">
+                <h3>هنوز دسته‌بندی‌ای ثبت نشده است.</h3>
+                <p>
+                    می‌توانی دسته‌بندی را دستی اضافه کنی یا از هوش مصنوعی کمک بگیری.
+                </p>
+                <a class="button button-ai"
+                   href="{% url 'products:category_ai_suggestions' %}?store_id={{ store.id }}">
+                    پیشنهاد دسته‌بندی با هوش مصنوعی
+                </a>
+            </div>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>

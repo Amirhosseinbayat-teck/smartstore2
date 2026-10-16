@@ -1,0 +1,26 @@
+
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ورود به حساب کاربری</title>
+</head>
+<body>
+
+    <h1>ورود به حساب کاربری</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">ورود</button>
+        <p>
+    حساب کاربری ندارید؟
+    <a href="{% url 'register' %}">ثبت‌نام کنید</a>
+</p>
+    </form>
+
+</body>
+</html>

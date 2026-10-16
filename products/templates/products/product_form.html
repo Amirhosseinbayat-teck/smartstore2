@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} | {{ store.name }}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 25px 15px; background: #f5f6fa;
+            color: #202534; font-family: Tahoma, Arial, sans-serif;
+            line-height: 1.9;
+        }
+        .container { max-width: 760px; margin: 20px auto; }
+        .panel {
+            padding: 28px; background: white; border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(25,35,60,.06);
+        }
+        h1 { margin: 0 0 5px; font-size: 24px; }
+        h2 { font-size: 19px; margin: 0 0 12px; }
+        .muted { color: #707789; font-size: 14px; margin-bottom: 25px; }
+        .field { margin-bottom: 19px; }
+        label {
+            display: block; margin-bottom: 7px; font-size: 14px;
+            font-weight: bold;
+        }
+        input:not([type="checkbox"]):not([type="radio"]),
+        select, textarea {
+            display: block; width: 100%; padding: 11px 12px;
+            border: 1px solid #dfe3eb; border-radius: 9px;
+            background: white; font-family: inherit; font-size: 14px;
+        }
+        textarea { resize: vertical; }
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid #c7d2fe; border-color: #6366f1;
+        }
+        .checkbox-field { display: flex; align-items: center; gap: 10px; }
+        .checkbox-field label { margin: 0; }
+        .checkbox-field input { width: 17px; height: 17px; }
+        .errors { margin-top: 5px; color: #b42318; font-size: 13px; }
+        .error-summary {
+            padding: 12px; margin-bottom: 20px;
+            background: #fff0f0; color: #a42b2b; border-radius: 9px;
+        }
+        .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+        .btn {
+            display: inline-block; border: none; border-radius: 9px;
+            padding: 11px 18px; font-family: inherit; font-size: 14px;
+            text-decoration: none; cursor: pointer;
+        }
+        .btn-primary { background: #4f46e5; color: white; }
+        .btn-light { background: #e9ebf2; color: #303647; }
+        .btn-ai { background: #087e8b; color: white; }
+        .btn-category { background: #344f70; color: white; }
+        .btn-save-category { background: #087e8b; color: white; padding: 7px 12px; }
+        .btn:disabled { opacity: .6; cursor: wait; }
+        .ai-help { margin-top: 7px; color: #707789; font-size: 12px; }
+        .ai-status { margin-top: 10px; font-size: 13px; }
+        .suggestion-list { margin-top: 12px; }
+        .suggestion-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px; margin-top: 8px; border: 1px solid #dfe3eb;
+            border-radius: 9px; background: #fafbff;
+        }
+        .suggestion-item input[type="radio"] { margin-top: 7px; }
+        .suggestion-content { flex: 1; min-width: 0; }
+        .suggestion-title { font-weight: bold; }
+        .suggestion-description {
+            display: block; color: #707789; font-size: 12px;
+            font-weight: normal; margin-top: 3px;
+        }
+        .suggestion-action { margin-top: 9px; }
+        .analysis-panel {
+            border: 1px solid #d9e4f5; background: #f8faff;
+            border-radius: 12px; padding: 18px; margin-top: 24px;
+        }
+        .analysis-section {
+            background: white; border: 1px solid #e5e9f1;
+            border-radius: 9px; padding: 12px; margin-top: 12px;
+        }
+        .analysis-section h3 { margin: 0 0 8px; font-size: 14px; }
+        .analysis-section p {
+            margin: 0; white-space: pre-wrap; overflow-wrap: anywhere;
+        }
+        .analysis-section ul { margin: 0; padding-right: 22px; }
+        .analysis-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .relevance-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 7px;
+            font-size: 13px; font-weight: bold; margin-bottom: 8px;
+        }
+        .relevance-relevant { background: #dcfce7; color: #166534; }
+        .relevance-irrelevant { background: #fee2e2; color: #991b1b; }
+        .relevance-review { background: #fef3c7; color: #92400e; }
+        .hidden { display: none; }
+        @media (max-width: 500px) {
+            .panel { padding: 20px 16px; }
+        }
+    </style>
+</head>
+<body>
+<main class="container">
+    <section class="panel">
+        <h1>{{ page_title }}</h1>
+        <div class="muted">فروشگاه: {{ store.name }}</div>
+
+        {% if form.non_field_errors %}
+            <div class="error-summary">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form method="post" id="product-form">
+            {% csrf_token %}
+            <input type="hidden" name="store_id" value="{{ store.id }}">
+
+            {% for field in form %}
+                <div class="field">
+                    {% if field.name == "is_active" %}
+                        <div class="checkbox-field">
+                            {{ field }}
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        </div>
+                    {% else %}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="errors">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <div class="field">
+                <button class="btn btn-category" type="button" id="suggest-categories">
+                    پیشنهاد دسته‌بندی با هوش مصنوعی
+                </button>
+                <div id="category-status" class="ai-status" role="status" aria-live="polite"></div>
+                <div id="category-suggestions" class="suggestion-list"></div>
+            </div>
+
+            <div class="field">
+                <label for="ai-features">ویژگی‌های محصول برای هوش مصنوعی</label>
+                <textarea id="ai-features" rows="4" maxlength="2000"
+                    placeholder="ویژگی‌های واقعی محصول را وارد کنید؛ مثلاً رنگ، اندازه یا مشخصات فنی."></textarea>
+                <div class="ai-help">
+                    فقط اطلاعاتی را وارد کنید که از صحت آن مطمئن هستید.
+                    این کادر جداگانه ذخیره نمی‌شود.
+                </div>
+            </div>
+
+            <div class="field">
+                <button class="btn btn-ai" type="button" id="generate-description">
+                    تولید توضیحات با هوش مصنوعی
+                </button>
+                <div id="ai-status" class="ai-status" role="status" aria-live="polite"></div>
+            </div>
+
+            <section class="analysis-panel">
+                <h2>تحلیل هوشمند محصول</h2>
+                <p class="ai-help">
+                    تناسب محصول با نوع کسب‌وکار، دسته‌بندی، توضیحات،
+                    کلمات کلیدی و اطلاعات تکمیل‌نشده را بررسی می‌کند.
+                </p>
+
+                <button class="btn btn-ai" type="button" id="analyze-product">
+                    تحلیل محصول با هوش مصنوعی
+                </button>
+                <div id="analysis-status" class="ai-status" role="status" aria-live="polite"></div>
+
+                <div id="analysis-results" class="hidden">
+                    <div class="analysis-section" id="relevance-section">
+                        <h3>تناسب با حوزه فعالیت فروشگاه</h3>
+                        <div>
+                            <span id="analysis-relevance-badge" class="relevance-badge"></span>
+                        </div>
+                        <p id="analysis-relevance-reason"></p>
+                        <p style="margin-top: 8px;">
+                            <strong>میزان اطمینان:</strong>
+                            <span id="analysis-relevance-confidence"></span>
+                        </p>
+                        <p class="ai-help">
+                            این نتیجه پیشنهادی است و مانع ثبت محصول نمی‌شود.
+                            پیش از تصمیم‌گیری، نتیجه را بررسی کنید.
+                        </p>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3>دسته‌بندی پیشنهادی</h3>
+                        <p id="analysis-category"></p>
+                        <div class="analysis-actions">
+                            <button class="btn btn-save-category" type="button" id="use-analysis-category">
+                                انتخاب دسته‌بندی پیشنهادی
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3>توضیحات پیشنهادی</h3>
+                        <p id="analysis-description"></p>
+                        <div class="analysis-actions">
+                            <button class="btn btn-save-category" type="button" id="use-analysis-description">
+                                استفاده از این توضیحات
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3>ویژگی‌های محصول</h3>
+                        <ul id="analysis-features"></ul>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3>کلمات کلیدی جست‌وجو</h3>
+                        <ul id="analysis-keywords"></ul>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3>اطلاعات تکمیل‌نشده</h3>
+                        <ul id="analysis-missing"></ul>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h3>سؤال‌های تکمیلی</h3>
+                        <ul id="analysis-questions"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <div class="buttons">
+                <button class="btn btn-primary" type="submit">ذخیره محصول</button>
+                <a class="btn btn-light"
+                   href="{% url 'products:product_list' %}?store_id={{ store.id }}">
+                    انصراف و بازگشت
+                </a>
+            </div>
+        </form>
+    </section>
+</main>
+
+<script>
+(function () {
+    const form = document.getElementById("product-form");
+    const csrfInput = form.querySelector('[name="csrfmiddlewaretoken"]');
+    const nameInput = form.querySelector('[name="name"]');
+    const categoryInput = form.querySelector('[name="category"]');
+    const descriptionInput = form.querySelector('[name="description"]');
+
+    const descriptionButton = document.getElementById("generate-description");
+    const descriptionStatus = document.getElementById("ai-status");
+    const featuresInput = document.getElementById("ai-features");
+
+    const categoryButton = document.getElementById("suggest-categories");
+    const categoryStatus = document.getElementById("category-status");
+    const suggestionsContainer = document.getElementById("category-suggestions");
+
+    const analysisButton = document.getElementById("analyze-product");
+    const analysisStatus = document.getElementById("analysis-status");
+    const analysisResults = document.getElementById("analysis-results");
+
+    const storeId = "{{ store.id }}";
+    let analysisCategory = "";
+
+    function addCategoryOption(category) {
+        let option = Array.from(categoryInput.options).find(
+            item => item.value === String(category.id)
+        );
+
+        if (!option) {
+            option = document.createElement("option");
+            option.value = String(category.id);
+            option.textContent = category.name;
+            categoryInput.appendChild(option);
+        }
+
+        categoryInput.value = String(category.id);
+    }
+
+    async function postForm(url, values) {
+        const data = new URLSearchParams();
+        data.append("csrfmiddlewaretoken", csrfInput.value);
+
+        Object.entries(values).forEach(([key, value]) => {
+            data.append(key, value == null ? "" : String(value));
+        });
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: data.toString(),
+            credentials: "same-origin"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "درخواست ناموفق بود.");
+        }
+
+        return result;
+    }
+
+    function showList(elementId, items) {
+        const list = document.getElementById(elementId);
+        list.replaceChildren();
+
+        if (!items || items.length === 0) {
+            const item = document.createElement("li");
+            item.textContent = "موردی اعلام نشد.";
+            list.appendChild(item);
+            return;
+        }
+
+        items.forEach(function (value) {
+            const item = document.createElement("li");
+            item.textContent = value;
+            list.appendChild(item);
+        });
+    }
+
+    function showRelevance(result) {
+        const badge = document.getElementById("analysis-relevance-badge");
+        const reason = document.getElementById("analysis-relevance-reason");
+        const confidence = document.getElementById("analysis-relevance-confidence");
+
+        const statusLabels = {
+            relevant: "مرتبط با حوزه فروشگاه",
+            irrelevant: "نامرتبط با حوزه فروشگاه",
+            needs_review: "نیازمند بررسی بیشتر"
+        };
+
+        const confidenceLabels = {
+            high: "زیاد",
+            medium: "متوسط",
+            low: "کم"
+        };
+
+        const statusClasses = {
+            relevant: "relevance-relevant",
+            irrelevant: "relevance-irrelevant",
+            needs_review: "relevance-review"
+        };
+
+        const status = result.relevance_status;
+        badge.textContent = statusLabels[status] || "وضعیت نامشخص";
+        badge.className = "relevance-badge " +
+            (statusClasses[status] || "relevance-review");
+
+        reason.textContent = result.relevance_reason ||
+            "دلیلی از طرف هوش مصنوعی ارائه نشد.";
+
+        confidence.textContent =
+            confidenceLabels[result.relevance_confidence] || "نامشخص";
+    }
+
+    descriptionButton.addEventListener("click", async function () {
+        const name = nameInput.value.trim();
+
+        if (!name) {
+            descriptionStatus.textContent = "ابتدا نام محصول را وارد کنید.";
+            nameInput.focus();
+            return;
+        }
+
+        descriptionButton.disabled = true;
+        descriptionStatus.textContent = "در حال تولید توضیحات؛ لطفاً صبر کنید...";
+
+        try {
+            const result = await postForm(
+                "{% url 'products:product_ai_description' %}",
+                {
+                    store_id: storeId,
+                    name: name,
+                    category: categoryInput.value,
+                    features: featuresInput.value
+                }
+            );
+
+            descriptionInput.value = result.description;
+            descriptionStatus.textContent =
+                "توضیحات تولید شد. می‌توانید آن را بررسی و ویرایش کنید.";
+        } catch (error) {
+            descriptionStatus.textContent =
+                error.message || "ارتباط با سرویس هوش مصنوعی برقرار نشد.";
+        } finally {
+            descriptionButton.disabled = false;
+        }
+    });
+
+    categoryButton.addEventListener("click", async function () {
+        const name = nameInput.value.trim();
+
+        if (!name) {
+            categoryStatus.textContent = "ابتدا نام محصول را وارد کنید.";
+            nameInput.focus();
+            return;
+        }
+
+        categoryButton.disabled = true;
+        categoryStatus.textContent = "در حال دریافت پیشنهادها...";
+        suggestionsContainer.replaceChildren();
+
+        try {
+            const result = await postForm(
+                "{% url 'products:product_ai_category_suggestions' %}",
+                { store_id: storeId, name: name }
+            );
+
+            const suggestions = result.suggestions || [];
+
+            if (suggestions.length === 0) {
+                categoryStatus.textContent = "پیشنهادی دریافت نشد.";
+                return;
+            }
+
+            suggestions.forEach(function (item, index) {
+                const wrapper = document.createElement("div");
+                wrapper.className = "suggestion-item";
+
+                const radio = document.createElement("input");
+                radio.type = "radio";
+                radio.name = "ai-category-choice";
+                radio.id = "ai-category-" + index;
+
+                const content = document.createElement("div");
+                content.className = "suggestion-content";
+
+                const title = document.createElement("div");
+                title.className = "suggestion-title";
+                title.textContent = item.name;
+
+                const description = document.createElement("span");
+                description.className = "suggestion-description";
+                description.textContent = item.description || "توضیحی ارائه نشده است.";
+
+                const action = document.createElement("div");
+                action.className = "suggestion-action";
+
+                const actionButton = document.createElement("button");
+                actionButton.type = "button";
+                actionButton.className = "btn btn-save-category";
+                actionButton.textContent =
+                    item.existing_id != null
+                        ? "انتخاب دسته‌بندی موجود"
+                        : "افزودن و انتخاب";
+
+                actionButton.addEventListener("click", async function () {
+                    actionButton.disabled = true;
+                    categoryStatus.textContent = "در حال ذخیره یا انتخاب دسته‌بندی...";
+
+                    try {
+                        let category;
+
+                        if (item.existing_id != null) {
+                            category = { id: item.existing_id, name: item.name };
+                        } else {
+                            category = await postForm(
+                                "{% url 'products:product_ai_category_create' %}",
+                                {
+                                    store_id: storeId,
+                                    name: item.name,
+                                    description: item.description || ""
+                                }
+                            );
+                        }
+
+                        addCategoryOption(category);
+                        radio.checked = true;
+                        categoryStatus.textContent =
+                            category.message || "دسته‌بندی انتخاب شد.";
+                    } catch (error) {
+                        categoryStatus.textContent = error.message || "عملیات ناموفق بود.";
+                    } finally {
+                        actionButton.disabled = false;
+                    }
+                });
+
+                content.appendChild(title);
+                content.appendChild(description);
+                action.appendChild(actionButton);
+                content.appendChild(action);
+                wrapper.appendChild(radio);
+                wrapper.appendChild(content);
+                suggestionsContainer.appendChild(wrapper);
+
+                radio.addEventListener("change", function () {
+                    if (item.existing_id != null) {
+                        addCategoryOption({ id: item.existing_id, name: item.name });
+                        categoryStatus.textContent = "دسته‌بندی موجود انتخاب شد.";
+                    } else {
+                        categoryStatus.textContent =
+                            "برای ثبت دسته‌بندی جدید، دکمه افزودن و انتخاب را بزنید.";
+                    }
+                });
+            });
+
+            categoryStatus.textContent = "پیشنهادها آماده‌اند.";
+        } catch (error) {
+            categoryStatus.textContent = error.message || "دریافت پیشنهادها ناموفق بود.";
+        } finally {
+            categoryButton.disabled = false;
+        }
+    });
+
+    analysisButton.addEventListener("click", async function () {
+        const name = nameInput.value.trim();
+
+        if (!name) {
+            analysisStatus.textContent = "ابتدا نام محصول را وارد کنید.";
+            nameInput.focus();
+            return;
+        }
+
+        analysisButton.disabled = true;
+        analysisResults.classList.add("hidden");
+        analysisStatus.textContent = "در حال تحلیل محصول؛ لطفاً صبر کنید...";
+
+        try {
+            const result = await postForm(
+                "{% url 'products:product_ai_analysis' %}",
+                {
+                    store_id: storeId,
+                    name: name,
+                    category: categoryInput.value,
+                    features: featuresInput.value
+                }
+            );
+
+            analysisCategory = result.suggested_category || "";
+
+            showRelevance(result);
+
+            document.getElementById("analysis-category").textContent =
+                analysisCategory || "دسته‌بندی پیشنهاد نشد.";
+
+            document.getElementById("analysis-description").textContent =
+                result.description || "توضیحی تولید نشد.";
+
+            showList("analysis-features", result.key_features);
+            showList("analysis-keywords", result.search_keywords);
+            showList("analysis-missing", result.missing_information);
+            showList("analysis-questions", result.clarification_questions);
+
+            analysisResults.classList.remove("hidden");
+            analysisStatus.textContent =
+                "تحلیل انجام شد. نتیجه را بررسی کن؛ چیزی هنوز ذخیره نشده است.";
+        } catch (error) {
+            analysisStatus.textContent =
+                error.message || "تحلیل محصول ناموفق بود.";
+        } finally {
+            analysisButton.disabled = false;
+        }
+    });
+
+    document.getElementById("use-analysis-description")
+        .addEventListener("click", function () {
+            descriptionInput.value =
+                document.getElementById("analysis-description").textContent;
+            descriptionInput.focus();
+            analysisStatus.textContent =
+                "توضیحات به فرم منتقل شد. برای ثبت نهایی، محصول را ذخیره کن.";
+        });
+
+    document.getElementById("use-analysis-category")
+        .addEventListener("click", async function () {
+            if (!analysisCategory || analysisCategory.length > 100) {
+                analysisStatus.textContent = "دسته‌بندی معتبری پیشنهاد نشده است.";
+                return;
+            }
+
+            const existingOption = Array.from(categoryInput.options).find(
+                option => option.textContent.trim().toLocaleLowerCase() ===
+                    analysisCategory.trim().toLocaleLowerCase()
+            );
+
+            if (existingOption) {
+                categoryInput.value = existingOption.value;
+                analysisStatus.textContent = "دسته‌بندی موجود انتخاب شد.";
+                return;
+            }
+
+            try {
+                const category = await postForm(
+                    "{% url 'products:product_ai_category_create' %}",
+                    {
+                        store_id: storeId,
+                        name: analysisCategory,
+                        description: "پیشنهادشده توسط تحلیل هوشمند محصول"
+                    }
+                );
+
+                addCategoryOption(category);
+                analysisStatus.textContent =
+                    "دسته‌بندی پیشنهادی ایجاد و انتخاب شد.";
+            } catch (error) {
+                analysisStatus.textContent =
+                    error.message || "ایجاد دسته‌بندی ناموفق بود.";
+            }
+        });
+})();
+</script>
+</body>
+</html>

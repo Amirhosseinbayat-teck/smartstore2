@@ -1,0 +1,21 @@
+
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>صفحه اصلی</title>
+</head>
+<body>
+
+    <h1>خوش آمدید!</h1>
+
+    <p>ورود به حساب کاربری با موفقیت انجام شد.</p>
+
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">خروج از حساب</button>
+    </form>
+
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} | {{ store.name }}</title>
+
+    <style>
+        :root {
+            --primary: {% if store.design %}{{ store.design.primary_color }}{% else %}#526B55{% endif %};
+            --secondary: {% if store.design %}{{ store.design.secondary_color }}{% else %}#F7F7F2{% endif %};
+            --text: #252823;
+            --muted: #777D75;
+            --border: #E8E9E3;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--secondary);
+            color: var(--text);
+            font-family: Tahoma, Arial, sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .container {
+            width: min(850px, 92%);
+            margin: 0 auto;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-inner {
+            min-height: 76px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 16px 0;
+        }
+
+        .brand {
+            color: var(--primary);
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .nav a {
+            display: inline-block;
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            font-size: 13px;
+        }
+
+        main { padding: 42px 0 70px; }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: clamp(24px, 4vw, 32px);
+        }
+
+        .subtitle {
+            margin: 0 0 28px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 2;
+        }
+
+        .panel {
+            padding: 28px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+        }
+
+        .field { margin-bottom: 23px; }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #DCDD D5;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        textarea {
+            min-height: 130px;
+            resize: vertical;
+            line-height: 2;
+        }
+
+        .hint {
+            display: block;
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .messages { margin-bottom: 20px; }
+
+        .message {
+            padding: 13px 15px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 13px 20px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .button-primary {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: #fff;
+        }
+
+        @media (max-width: 550px) {
+            .panel { padding: 20px 16px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="container header-inner">
+        <a class="brand" href="/?store_id={{ store.id }}">
+            {{ store.name }}
+        </a>
+
+        <nav class="nav">
+            <a href="{% url 'products:category_list' %}?store_id={{ store.id }}">
+                بازگشت به دسته‌بندی‌ها
+            </a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+
+    <h1>{{ page_title }}</h1>
+
+    <p class="subtitle">
+        نام و توضیحات دسته‌بندی جدید را برای فروشگاه {{ store.name }} وارد کن.
+    </p>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <section class="panel">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="field">
+                <label for="name">نام دسته‌بندی</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    maxlength="100"
+                    placeholder="مثلاً پوشاک ورزشی"
+                    value="{{ request.POST.name|default:'' }}"
+                    required
+                >
+                <span class="hint">
+                    نام باید کوتاه، روشن و مرتبط با محصولات باشد.
+                </span>
+            </div>
+
+            <div class="field">
+                <label for="description">توضیحات دسته‌بندی</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    placeholder="توضیح کوتاهی درباره این دسته‌بندی بنویس..."
+                >{{ request.POST.description|default:'' }}</textarea>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="button button-primary">
+                    ذخیره دسته‌بندی
+                </button>
+
+                <a
+                    class="button"
+                    href="{% url 'products:category_list' %}?store_id={{ store.id }}"
+                >
+                    انصراف
+                </a>
+            </div>
+        </form>
+    </section>
+
+</main>
+
+</body>
+</html>

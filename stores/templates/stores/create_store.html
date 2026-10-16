@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ساخت فروشگاه هوشمند</title>
+    <style>
+        body {
+            font-family: Tahoma, Arial, sans-serif;
+            background: #f5f5f0;
+            color: #222;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        form {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        label {
+            display: block;
+            margin-top: 18px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        button {
+            margin-top: 25px;
+            padding: 13px 20px;
+            background: #222bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <h1>ساخت فروشگاه هوشمند</h1>
+    <p>اطلاعات کسب‌وکارت را وارد کن تا هوش مصنوعی طراحی فروشگاهت را آماده کند.</p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="business_type">نوع کسب‌وکار</label>
+        <select id="business_type" name="business_type" required>
+            <option value="">انتخاب کن</option>
+            <option value="clothing">پوشاک</option>
+            <option value="electronics">لوازم الکترونیکی</option>
+            <option value="food">مواد غذایی</option>
+            <option value="beauty">زیبایی و آرایشی</option>
+            <option value="other">سایر</option>
+        </select>
+
+        <label for="target_audience">مخاطبان هدف</label>
+        <input
+            id="target_audience"
+            name="target_audience"
+            type="text"
+            maxlength="200"
+            placeholder="مثلاً جوانان ۱۸ تا ۳۰ سال"
+            required
+        >
+
+        <label for="style">سبک موردنظر فروشگاه</label>
+        <input
+            id="style"
+            name="style"
+            type="text"
+            maxlength="100"
+            placeholder="مثلاً مدرن، مینیمال و پرانرژی"
+            required
+        >
+
+        <label for="additional_description">توضیحات تکمیلی</label>
+        <textarea
+            id="additional_description"
+            name="additional_description"
+            rows="5"
+            placeholder="محصولات، ویژگی‌ها و سلیقه‌ات را توضیح بده"
+        ></textarea>
+
+        <button type="submit">ساخت فروشگاه با هوش مصنوعی</button>
+    </form>
+</body>
+</html>

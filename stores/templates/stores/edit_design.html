@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ویرایش طراحی {{ store.name }}</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 30px 16px;
+            background: #f4f5f7;
+            color: #222;
+            font-family: Tahoma, Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px #00000010;
+        }
+
+        h1 { margin-top: 0; font-size: 25px; }
+
+        .field { margin-bottom: 22px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font: inherit;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 48px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button, .back {
+            display: inline-block;
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 6px;
+            background: #202020;
+            color: white;
+            font: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .back {
+            margin-right: 8px;
+            background: #e8e8e8;
+            color: #222;
+        }
+
+        .messages {
+            padding: 12px;
+            margin-bottom: 20px;
+            background: #e5f7e9;
+            border-radius: 6px;
+        }
+
+        .ai-section {
+            margin-top: 30px;
+            padding-top: 22px;
+            border-top: 1px solid #ddd;
+        }
+
+        .ai-button { background: #5b3cc4; }
+
+        .hint {
+            color: #666;
+            line-height: 1.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ویرایش طراحی {{ store.name }}</h1>
+        <p>عنوان، شعار و رنگ‌های فروشگاهت را تغییر بده.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="messages">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="store_id" value="{{ store.id }}">
+
+            {% for field in form %}
+                <div class="field">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+
+                    {% for error in field.errors %}
+                        <p style="color: red;">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <button type="submit">ذخیره تغییرات</button>
+            <a class="back" href="{% url 'home' %}?store_id={{ store.id }}">
+                بازگشت به فروشگاه
+            </a>
+        </form>
+
+        <div class="ai-section">
+            <h2>طراحی هوشمند</h2>
+            <p class="hint">
+                با استفاده از اطلاعات کسب‌وکار ثبت‌شده، طراحی تازه‌ای
+                با هوش مصنوعی تولید می‌شود.
+            </p>
+
+            <form method="post" action="{% url 'regenerate_store_design' %}">
+                {% csrf_token %}
+                <input type="hidden" name="store_id" value="{{ store.id }}">
+                <button class="ai-button" type="submit">
+                    تولید مجدد طراحی با هوش مصنوعی
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

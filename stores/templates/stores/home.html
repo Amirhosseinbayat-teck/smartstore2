@@ -1,0 +1,571 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if store %}{{ store.name }}{% else %}فروشگاه{% endif %}</title>
+
+    <style>
+        :root {
+            --primary: {% if store and store.design %}{{ store.design.primary_color }}{% else %}#526B55{% endif %};
+            --secondary: {% if store and store.design %}{{ store.design.secondary_color }}{% else %}#F7F7F2{% endif %};
+            --text: #252823;
+            --muted: #777D75;
+            --primary-soft: color-mix(in srgb, var(--primary) 10%, white);
+            --primary-border: color-mix(in srgb, var(--primary) 30%, white);
+            --radius: 18px;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            background: var(--secondary);
+            color: var(--text);
+            font-family: Tahoma, Arial, sans-serif;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .container {
+            width: min(1120px, 90%);
+            margin: 0 auto;
+        }
+
+        .site-header {
+            background: var(--secondary);
+            border-bottom: 1px solid var(--primary-border);
+        }
+
+        .header-inner {
+            min-height: 82px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            font-size: 13px;
+            color: var(--text);
+        }
+
+        .nav a:hover { color: var(--primary); }
+
+        .nav .nav-highlight {
+            padding: 10px 13px;
+            border: 1px solid var(--primary-border);
+            border-radius: 10px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .hero { padding: 76px 0 66px; }
+
+        .hero-panel {
+            position: relative;
+            overflow: hidden;
+            padding: clamp(32px, 6vw, 76px);
+            border-radius: 26px;
+            background: var(--primary-soft);
+            border: 1px solid var(--primary-border);
+        }
+
+        .hero-panel::before {
+            content: "";
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            left: -80px;
+            top: -100px;
+            border-radius: 50%;
+            background: var(--primary);
+            opacity: .18;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 18px;
+            padding: 8px 13px;
+            border-radius: 30px;
+            background: var(--secondary);
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .hero h1 {
+            position: relative;
+            max-width: 760px;
+            margin: 0 0 20px;
+            font-size: clamp(32px, 5vw, 58px);
+            line-height: 1.7;
+            letter-spacing: -1px;
+        }
+
+        .hero-description {
+            position: relative;
+            max-width: 660px;
+            margin: 0;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 2.3;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 14px 22px;
+            border: 1px solid var(--primary);
+            border-radius: 11px;
+            background: var(--primary);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            transition: transform .2s, opacity .2s;
+        }
+
+        .button:hover { transform: translateY(-2px); opacity: .9; }
+
+        .button-outline {
+            background: var(--secondary);
+            color: var(--primary);
+            border-color: var(--primary-border);
+        }
+
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding-bottom: 65px;
+        }
+
+        .benefit {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 22px;
+            border: 1px solid var(--primary-border);
+            border-radius: var(--radius);
+            background: var(--secondary);
+        }
+
+        .benefit-icon {
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            font-size: 21px;
+        }
+
+        .benefit strong { display: block; margin-bottom: 7px; font-size: 14px; }
+        .benefit span { color: var(--muted); font-size: 12px; line-height: 1.8; }
+
+        .products-section {
+            padding: 64px 0 82px;
+            background: var(--secondary);
+            border-top: 1px solid var(--primary-border);
+        }
+
+        .category-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .category-filter {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 16px;
+            border: 1px solid var(--primary-border);
+            border-radius: 10px;
+            background: var(--secondary);
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .category-filter:hover { border-color: var(--primary); color: var(--primary); }
+
+        .category-filter.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-heading h2 { margin: 0 0 10px; font-size: clamp(24px, 4vw, 34px); }
+        .section-heading p { margin: 0; color: var(--muted); font-size: 14px; line-height: 2; }
+        .product-count { white-space: nowrap; color: var(--muted); font-size: 13px; }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .product-card {
+            overflow: hidden;
+            border: 1px solid var(--primary-border);
+            border-radius: var(--radius);
+            background: var(--primary-soft);
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px color-mix(in srgb, var(--primary) 12%, transparent);
+        }
+
+        .product-visual {
+            display: grid;
+            place-items: center;
+            min-height: 190px;
+            background: var(--secondary);
+            color: var(--primary);
+        }
+
+        .product-visual svg { width: 78px; height: 78px; }
+        .product-info { padding: 20px; }
+
+        .product-category {
+            display: inline-block;
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .product-info h3 { margin: 0 0 10px; font-size: 17px; }
+
+        .product-description {
+            min-height: 44px;
+            margin: 0 0 18px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 2;
+        }
+
+        .product-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--primary-border);
+        }
+
+        .product-price { font-size: 17px; font-weight: 800; }
+        .currency { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; }
+        .stock { color: var(--primary); font-size: 11px; }
+
+        .empty-products {
+            padding: 42px 20px;
+            border: 1px dashed var(--primary-border);
+            border-radius: var(--radius);
+            text-align: center;
+            color: var(--muted);
+            line-height: 2.2;
+            background: var(--primary-soft);
+        }
+
+        .site-footer { padding: 34px 0; background: var(--primary); color: white; }
+
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-brand { margin-bottom: 8px; color: white; font-size: 17px; font-weight: bold; }
+        .footer-tagline { color: white; opacity: .9; font-size: 13px; line-height: 2; }
+        .footer-note { color: white; opacity: .85; font-size: 12px; }
+
+        @media (max-width: 800px) {
+            .benefits { grid-template-columns: 1fr; padding-bottom: 45px; }
+            .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .hero { padding: 45px 0; }
+        }
+
+        @media (max-width: 560px) {
+            .header-inner {
+                padding: 18px 0;
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .brand { font-size: 22px; }
+            .nav { gap: 12px; }
+            .nav a { font-size: 12px; }
+            .nav .nav-highlight { padding: 8px 10px; }
+            .hero-panel { padding: 28px 22px; border-radius: 20px; }
+            .hero h1 { font-size: 32px; }
+            .hero-description { font-size: 14px; }
+            .product-grid { grid-template-columns: 1fr; }
+            .product-visual { min-height: 170px; }
+            .section-heading { align-items: flex-start; flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="#home">
+            {% if store %}{{ store.name }}{% else %}فروشگاه{% endif %}
+        </a>
+
+        <nav class="nav">
+            <a href="#home">خانه</a>
+            <a href="#products">محصولات</a>
+            <a href="#about">درباره فروشگاه</a>
+
+            {% if not is_public_store %}
+                <a class="nav-highlight" href="{% url 'my_stores' %}">فروشگاه‌های من</a>
+
+                {% if store %}
+                    <a class="nav-highlight"
+                       href="{% url 'products:product_list' %}?store_id={{ store.id }}">
+                        مدیریت محصولات
+                    </a>
+                {% endif %}
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+<main>
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-panel">
+                <span class="eyebrow">تجربه‌ای متفاوت از خرید آنلاین</span>
+
+                <h1>
+                    {% if store and store.design and store.design.hero_title %}
+                        {{ store.design.hero_title }}
+                    {% else %}
+                        به فروشگاه ما خوش آمدید
+                    {% endif %}
+                </h1>
+
+                <p class="hero-description" id="about">
+                    {% if store %}
+                        {{ store.description }}
+                    {% else %}
+                        محصولات مورد علاقه‌ات را با تجربه‌ای ساده و دلنشین پیدا کن.
+                    {% endif %}
+                </p>
+
+                <div class="hero-actions">
+                    <a class="button" href="#products">مشاهده محصولات</a>
+
+                    {% if store and not is_public_store %}
+                        <a class="button button-outline"
+                           href="{% url 'edit_store_design' %}?store_id={{ store.id }}">
+                            ویرایش ظاهر فروشگاه
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container benefits">
+        <div class="benefit">
+            <div class="benefit-icon">✦</div>
+            <div><strong>انتخاب هوشمندانه</strong><span>محصولات متناسب با نیاز تو</span></div>
+        </div>
+        <div class="benefit">
+            <div class="benefit-icon">♡</div>
+            <div><strong>تجربه‌ای ساده</strong><span>جست‌وجو و انتخاب بدون پیچیدگی</span></div>
+        </div>
+        <div class="benefit">
+            <div class="benefit-icon">✓</div>
+            <div><strong>اطلاعات شفاف</strong><span>مشاهده قیمت و موجودی محصولات</span></div>
+        </div>
+    </section>
+
+    <section class="products-section" id="products">
+        <div class="container">
+            {% if categories %}
+                <div class="category-filters">
+                    {% if is_public_store %}
+                        <a class="category-filter{% if not selected_category %} active{% endif %}"
+                           href="{% url 'public_store' slug=store.slug %}#products">
+                            همه محصولات
+                        </a>
+                    {% else %}
+                        <a class="category-filter{% if not selected_category %} active{% endif %}"
+                           href="{% url 'home' %}?store_id={{ store.id }}#products">
+                            همه محصولات
+                        </a>
+                    {% endif %}
+
+                    {% for category in categories %}
+                        {% if is_public_store %}
+                            <a class="category-filter{% if selected_category and selected_category.id == category.id %} active{% endif %}"
+                               href="{% url 'public_store' slug=store.slug %}?category={{ category.id }}#products">
+                                {{ category.name }}
+                            </a>
+                        {% else %}
+                            <a class="category-filter{% if selected_category and selected_category.id == category.id %} active{% endif %}"
+                               href="{% url 'home' %}?store_id={{ store.id }}&amp;category={{ category.id }}#products">
+                                {{ category.name }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="section-heading">
+                <div>
+                    <h2>
+                        {% if selected_category %}
+                            محصولات دسته‌بندی {{ selected_category.name }}
+                        {% else %}
+                            محصولات فروشگاه
+                        {% endif %}
+                    </h2>
+                    <p>انتخابی ساده، برای سلیقه‌ای خاص.</p>
+                </div>
+                <span class="product-count">{{ products|length }} محصول</span>
+            </div>
+
+            {% if products %}
+                <div class="product-grid">
+                    {% for product in products %}
+                        <article class="product-card">
+                            <div class="product-visual">
+                                <svg viewBox="0 0 100 100" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     aria-hidden="true">
+                                    <rect x="18" y="18" width="64" height="64" rx="20"
+                                          stroke="currentColor" stroke-width="2" opacity=".22"/>
+                                    <path d="M38 38L45 31H55L62 38L72 44L65 55L59 51V70H41V51L35 55L28 44L38 38Z"
+                                          stroke="currentColor" stroke-width="2.5"
+                                          stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+
+                            <div class="product-info">
+                                <span class="product-category">
+                                    {% if product.category %}{{ product.category.name }}{% else %}محصول فروشگاه{% endif %}
+                                </span>
+
+                                <h3>{{ product.name }}</h3>
+
+                                <p class="product-description">
+                                    {% if product.description %}
+                                        {{ product.description }}
+                                    {% else %}
+                                        اطلاعات بیشتر این محصول به‌زودی ارائه می‌شود.
+                                    {% endif %}
+                                </p>
+
+                                <div class="product-bottom">
+                                    <div>
+                                        <div class="product-price">{{ product.price|floatformat:0 }}</div>
+                                        <span class="currency">تومان</span>
+                                    </div>
+
+                                    {% if product.stock > 0 %}
+                                        <span class="stock">موجود</span>
+                                    {% else %}
+                                        <span class="stock" style="color:#B54747">ناموجود</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-products">
+                    {% if selected_category %}
+                        <h3>در این دسته‌بندی محصولی ثبت نشده است.</h3>
+                        <p>برای دیدن محصولات دیگر، گزینهٔ «همه محصولات» را انتخاب کن.</p>
+
+                        {% if is_public_store %}
+                            <a class="button" href="{% url 'public_store' slug=store.slug %}#products">
+                                نمایش همه محصولات
+                            </a>
+                        {% else %}
+                            <a class="button" href="{% url 'home' %}?store_id={{ store.id }}#products">
+                                نمایش همه محصولات
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <h3>هنوز محصولی ثبت نشده است.</h3>
+                        <p>پس از افزودن محصولات به این فروشگاه، آن‌ها در این بخش نمایش داده خواهند شد.</p>
+
+                        {% if store and not is_public_store %}
+                            <a class="button"
+                               href="{% url 'products:product_create' %}?store_id={{ store.id }}">
+                                افزودن اولین محصول
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-inner">
+        <div>
+            <div class="footer-brand">
+                {% if store %}{{ store.name }}{% else %}فروشگاه{% endif %}
+            </div>
+            <div class="footer-tagline">
+                {% if store and store.design and store.design.footer_tagline %}
+                    {{ store.design.footer_tagline }}
+                {% else %}
+                    تجربه‌ای تازه از خرید آنلاین
+                {% endif %}
+            </div>
+        </div>
+        <div class="footer-note">طراحی‌شده با دقت، برای تجربه‌ای بهتر.</div>
+    </div>
+</footer>
+
+</body>
+</html>

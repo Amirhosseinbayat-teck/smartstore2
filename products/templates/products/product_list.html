@@ -1,0 +1,273 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت محصولات | {{ store.name }}</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Tahoma, Arial, sans-serif;
+            background: #f5f6fa;
+            color: #202534;
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 18px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .muted {
+            color: #707789;
+            font-size: 14px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 9px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-light {
+            background: #e9ebf2;
+            color: #303647;
+        }
+
+        .btn-warning {
+            background: #fff0ce;
+            color: #8a5a00;
+        }
+
+        .messages {
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            background: #e6f8ed;
+            color: #17683a;
+            border-radius: 10px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 5px 25px rgba(25, 35, 60, 0.05);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th, td {
+            text-align: right;
+            padding: 15px 12px;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        th {
+            color: #707789;
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .active {
+            background: #e4f8eb;
+            color: #187744;
+        }
+
+        .inactive {
+            background: #ffe8e8;
+            color: #a42b2b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .actions form {
+            margin: 0;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 45px 15px;
+        }
+
+        .empty h2 {
+            font-size: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin-top: 22px;
+            }
+
+            .panel {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 21px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <header class="header">
+            <div>
+                <h1>مدیریت محصولات</h1>
+                <div class="muted">{{ store.name }}</div>
+            </div>
+
+            <div>
+                <a class="btn btn-light" href="/?store_id={{ store.id }}">
+                    بازگشت به فروشگاه
+                </a>
+
+                <a class="btn btn-primary"
+                   href="{% url 'products:product_create' %}?store_id={{ store.id }}">
+                    + افزودن محصول
+                </a>
+            </div>
+        </header>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="messages">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <section class="panel">
+            {% if products %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>نام محصول</th>
+                                <th>دسته‌بندی</th>
+                                <th>قیمت</th>
+                                <th>موجودی</th>
+                                <th>وضعیت</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for product in products %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+
+                                    <td>
+                                        {% if product.category %}
+                                            {{ product.category.name }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>{{ product.price|floatformat:0 }}</td>
+                                    <td>{{ product.stock }}</td>
+
+                                    <td>
+                                        {% if product.is_active %}
+                                            <span class="status active">فعال</span>
+                                        {% else %}
+                                            <span class="status inactive">غیرفعال</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <div class="actions">
+                                            <a class="btn btn-light"
+                                               href="{% url 'products:product_edit' product.id %}">
+                                                ویرایش
+                                            </a>
+
+                                            <form method="post"
+                                                  action="{% url 'products:product_toggle' product.id %}">
+                                                {% csrf_token %}
+
+                                                <button class="btn btn-warning" type="submit">
+                                                    {% if product.is_active %}
+                                                        غیرفعال‌کردن
+                                                    {% else %}
+                                                        فعال‌کردن
+                                                    {% endif %}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty">
+                    <h2>هنوز محصولی ثبت نشده است</h2>
+                    <p class="muted">
+                        اولین محصول فروشگاهت را اضافه کن.
+                    </p>
+
+                    <a class="btn btn-primary"
+                       href="{% url 'products:product_create' %}?store_id={{ store.id }}">
+                        افزودن اولین محصول
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

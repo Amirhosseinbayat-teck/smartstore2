@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پیشنهاد دسته‌بندی هوشمند | {{ store.name }}</title>
+
+    <style>
+        :root {
+            --primary: {% if store.design %}{{ store.design.primary_color }}{% else %}#526B55{% endif %};
+            --secondary: {% if store.design %}{{ store.design.secondary_color }}{% else %}#F7F7F2{% endif %};
+            --text: #252823;
+            --muted: #777D75;
+            --border: #E8E9E3;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--secondary);
+            color: var(--text);
+            font-family: Tahoma, Arial, sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .container {
+            width: min(900px, 92%);
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-inner {
+            min-height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 15px 0;
+        }
+
+        .brand {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 19px;
+        }
+
+        .back-link {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        main {
+            padding: 38px 0 60px;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: clamp(23px, 4vw, 32px);
+        }
+
+        .subtitle {
+            margin: 0 0 25px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 2;
+        }
+
+        .notice {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 2;
+        }
+
+        .category-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 13px;
+            padding: 20px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 13px;
+            cursor: pointer;
+        }
+
+        .category-card input[type="checkbox"] {
+            width: 19px;
+            height: 19px;
+            margin-top: 3px;
+            accent-color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .category-card strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .category-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 2;
+            overflow-wrap: anywhere;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 13px 18px;
+            border: 0;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .button-secondary {
+            background: white;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .empty {
+            padding: 30px;
+            text-align: center;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            line-height: 2;
+        }
+
+        @media (max-width: 600px) {
+            .category-card { padding: 15px; }
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div class="container header-inner">
+        <a class="brand" href="/?store_id={{ store.id }}">
+            {{ store.name }}
+        </a>
+
+        <a class="back-link"
+           href="{% url 'products:category_list' %}?store_id={{ store.id }}">
+            بازگشت به مدیریت دسته‌بندی‌ها
+        </a>
+    </div>
+</header>
+
+<main class="container">
+    <h1>پیشنهاد دسته‌بندی با هوش مصنوعی</h1>
+
+    <p class="subtitle">
+        پیشنهادها برای فروشگاه «{{ store.name }}» تولید شده‌اند.
+        دسته‌بندی‌هایی را که مناسب کسب‌وکار تو هستند انتخاب کن.
+    </p>
+
+    <div class="notice">
+        هیچ دسته‌بندی‌ای تا زمانی که انتخاب و تأیید نکنی ذخیره نمی‌شود.
+    </div>
+
+    {% if suggestions %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="store_id" value="{{ store.id }}">
+
+            {% for category in suggestions %}
+                <label class="category-card">
+                    <input
+                        type="checkbox"
+                        name="selected_indices"
+                        value="{{ forloop.counter0 }}"
+                    >
+
+                    <span>
+                        <strong>{{ category.name }}</strong>
+                        <p>{{ category.description }}</p>
+
+                        <input
+                            type="hidden"
+                            name="category_name_{{ forloop.counter0 }}"
+                            value="{{ category.name }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="category_description_{{ forloop.counter0 }}"
+                            value="{{ category.description }}"
+                        >
+                    </span>
+                </label>
+            {% endfor %}
+
+            <div class="actions">
+                <button type="submit" class="button">
+                    افزودن دسته‌بندی‌های انتخاب‌شده
+                </button>
+
+                <a class="button button-secondary"
+                   href="{% url 'products:category_list' %}?store_id={{ store.id }}">
+                    انصراف
+                </a>
+            </div>
+        </form>
+    {% else %}
+        <div class="empty">
+            <p>پیشنهاد جدیدی برای این فروشگاه باقی نمانده است.</p>
+
+            <a class="button"
+               href="{% url 'products:category_list' %}?store_id={{ store.id }}">
+                بازگشت به دسته‌بندی‌ها
+            </a>
+        </div>
+    {% endif %}
+</main>
+</body>
+</html>
